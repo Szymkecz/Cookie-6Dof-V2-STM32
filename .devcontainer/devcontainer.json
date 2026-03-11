@@ -1,0 +1,29 @@
+{
+    "name": "STM32 CMake Toolchain",
+    "build": {
+        "dockerfile": "Dockerfile"
+    },
+    // Przekazanie portów USB z Linuxa do Dockera (dla ST-Linka)
+    "runArgs": [
+        "--privileged",
+        "-v", "/dev/bus/usb:/dev/bus/usb"
+    ],
+    "customizations": {
+        "vscode": {
+            // Te rozszerzenia zainstalują się automatycznie wewnątrz kontenera
+            "extensions": [
+                "ms-vscode.cpptools",
+                "ms-vscode.cmake-tools",
+                "twxs.cmake",
+                "marus25.cortex-debug"
+            ],
+            "settings": {
+                "cmake.configureOnOpen": true,
+                "cmake.generator": "Ninja"
+            }
+        }
+    },
+    "remoteUser": "root",
+    // add this directory as safe to use for git
+    "postCreateCommand": "git config --global --add safe.directory '*'"
+}
