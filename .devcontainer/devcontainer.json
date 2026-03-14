@@ -14,7 +14,7 @@
             "extensions": [
                 "ms-vscode.cpptools",
                 "ms-vscode.cmake-tools",
-                "twxs.cmake",
+                "ms-vscode.cpptools-extension-pack",
                 "marus25.cortex-debug"
             ],
             "settings": {
@@ -24,6 +24,6 @@
         }
     },
     "remoteUser": "root",
-    // add this directory as safe to use for git
-    "postCreateCommand": "git config --global --add safe.directory '*'"
+    // add this directory as safe to use for git, add user of repo
+    "postCreateCommand": "git config --global --add safe.directory '*' && git config --global user.name 'Szymkecz' && git config --global user.email 'szymczak1969@gmail.com'"
 }
