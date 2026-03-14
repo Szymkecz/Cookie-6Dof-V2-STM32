@@ -1,19 +1,26 @@
 #include "app.hpp"
-#include "main.h" 
+#include "main.h"
+#include "usart.h" 
+#include <cstdio>
 
 
-// Główna funkcja aplikacji
-void app() {
-    // Inicjalizacja Twoich obiektów (np. Serwa, Kinematyki)
-    // ...
+extern "C" int _write(int file, char *ptr, int len) {
+    // Wysyła ciąg znaków przez UART2
+    HAL_UART_Transmit(&huart2, (uint8_t*)ptr, (uint16_t)len, HAL_MAX_DELAY);
+    return len;
+}
 
-    // Główna pętla programu (zastępuje while(1) z main.c)
+int app() {
+
+    
+    printf("Zaczynamy! STM32 gotowe do pracy w C++\r\n");
+    
     while (true) {
-        // Tutaj czytasz UART, liczysz kąty, machasz serwem
+    
         HAL_GPIO_WritePin(LD2_GPIO_Port,LD2_Pin, GPIO_PIN_SET);
         HAL_Delay(500);
         HAL_GPIO_WritePin(LD2_GPIO_Port,LD2_Pin, GPIO_PIN_RESET);
         HAL_Delay(500);
-        // HAL_Delay(10); // Małe opóźnienie, żeby nie zablokować mikrokontrolera
+    
     }
 }
