@@ -1,24 +1,23 @@
-add_library(app STATIC)
+add_library(servo_manager STATIC)
 
-target_sources(app
+target_sources(servo_manager
     PRIVATE
-        app.hpp
-        app.cpp
+        servo_manager.cpp
+        servo_manager.hpp
 )
 
-target_include_directories(app
+target_include_directories(servo_manager
     PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-target_link_libraries(app
+target_link_libraries(servo_manager
     PUBLIC
-        stm32cubemx
-        servo_lib
-        servo_manager
+        stm32cubemx       
+        servo_lib    
 )
 
-target_compile_options(app
+target_compile_options(servo_manager
     PUBLIC
         -std=c++23
         -Wall

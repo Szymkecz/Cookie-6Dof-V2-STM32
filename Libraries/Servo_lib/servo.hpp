@@ -15,7 +15,7 @@ constexpr int16_t DEFAULT_MIN_ANGLE = 0;
 constexpr int16_t DEFAULT_MAX_ANGLE = 180;
 float remapf(float x, float in_min, float in_max, float out_min, float out_max);
 
-struct Servo {
+class Servo {
 public:
     Servo() noexcept = default;
 

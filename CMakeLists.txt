@@ -41,6 +41,7 @@ add_executable(${CMAKE_PROJECT_NAME})
 add_subdirectory(cmake/stm32cubemx)
 add_subdirectory(App)
 add_subdirectory(Libraries/Servo_lib)
+add_subdirectory(Libraries/Servo_manager)
 
 # Link directories setup
 target_link_directories(${CMAKE_PROJECT_NAME} PRIVATE
@@ -69,6 +70,9 @@ list(REMOVE_ITEM CMAKE_C_IMPLICIT_LINK_LIBRARIES ob)
 target_link_libraries(${CMAKE_PROJECT_NAME}
     stm32cubemx
     app
-    servo_lib
+    # servo_lib
+    # servo_manager
     # Add user defined libraries
 )
+
+target_link_options(${CMAKE_PROJECT_NAME} PRIVATE -u _printf_float)
