@@ -9,7 +9,7 @@
 
 constexpr uint16_t MIN_PULSE_WIDTH = 350;
 constexpr uint16_t MAX_PULSE_WIDTH = 2600;
-constexpr uint8_t PWM_DEADBAND = 4;
+constexpr uint8_t PWM_DEADBAND = 5;
 
 constexpr int16_t DEFAULT_MIN_ANGLE = 0;
 constexpr int16_t DEFAULT_MAX_ANGLE = 180;
@@ -32,21 +32,21 @@ public:
     // calibration
     void set_new_map(int16_t min_map, int16_t max_map);
     void set_angle_offset(int16_t offset);
-    void set_adc_map(uint16_t min_adc, uint16_t max_adc) {};
+    void set_adc_map(uint16_t min_adc, uint16_t max_adc) {}; // not implemented yet
 
     void turn_off();
     void turn_on();
 
     // movement
     void set_pwm(uint16_t pwm);
-    void set_angle(double angle);
+    void set_angle(float angle);
 
     // feedback info
     uint16_t get_curr_pwm() const noexcept
     {
         return curr_pwm_;
     }
-    double get_curr_angle() const noexcept
+    float get_curr_angle() const noexcept
     {
         return curr_angle_;
     }
@@ -62,7 +62,14 @@ public:
     }
 
     void print_config() const noexcept;
-
+    char uart_config() const noexcept
+    {
+        /* char buffer[100];
+        snprintf(buffer, sizeof(buffer), "CH:%lu, PWM:[%u-%u], CURR_PWM:%u, CURR_ANGLE:%.2f, ANGLE_MAP:[%d-%d], OFFSET:%d\r\n",
+                 channel_, min_pwm_, max_pwm_, curr_pwm_, curr_angle_, min_angle_map_, max_angle_map_, offset_angle_map_);
+        */
+        return *buffer; 
+    }
 private:
     TIM_HandleTypeDef* timer_ = nullptr;
     uint32_t channel_ = 0;
@@ -73,7 +80,7 @@ private:
     uint16_t min_pwm_ = MIN_PULSE_WIDTH;
     uint16_t max_pwm_ = MAX_PULSE_WIDTH;
 
-    double curr_angle_ = 0.0;
+    float curr_angle_ = 0.0;
     int16_t offset_angle_map_ = 0;
     int16_t min_angle_map_ = DEFAULT_MIN_ANGLE;
     int16_t max_angle_map_ = DEFAULT_MAX_ANGLE;

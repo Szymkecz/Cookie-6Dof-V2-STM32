@@ -65,14 +65,14 @@ void Servo::set_pwm(uint16_t pwm)
     __HAL_TIM_SET_COMPARE(timer_, channel_, curr_pwm_);
 }
 
-void Servo::set_angle(double angle)
+void Servo::set_angle(float angle)
 {
     // // update angle in structure
     // curr_angle_ = std::clamp(angle,
-    //                          static_cast<double>(get_min_angle_map()),
-    //                          static_cast<double>(get_max_angle_map()));
+    //                          static_cast<float>(get_min_angle_map()),
+    //                          static_cast<float>(get_max_angle_map()));
     // // remap
-    // double offset_pos = angle;
+    // float offset_pos = angle;
     // int16_t result = round(remapf(offset_pos,
     //                               get_min_angle_map(),
     //                               get_max_angle_map(),
@@ -80,24 +80,28 @@ void Servo::set_angle(double angle)
     //                               max_pwm_));
 
     // straighten the angle and then use basic map//default 0-180
-    double offseted_angle = angle + static_cast<double>(offset_angle_map_);
+    float offseted_angle = angle + static_cast<float>(offset_angle_map_);
 
-    double min_angle = std::min(min_angle_map_, max_angle_map_);
-    double max_angle = std::max(min_angle_map_, max_angle_map_);
+    float min_angle = std::min(min_angle_map_, max_angle_map_);
+    float max_angle = std::max(min_angle_map_, max_angle_map_);
 
     curr_angle_ = std::clamp(offseted_angle, min_angle, max_angle) -
-                  static_cast<double>(offset_angle_map_);
+                  static_cast<float>(offset_angle_map_);
 
-    int16_t result = round(remapf(offseted_angle,
-                                  static_cast<double>(min_angle_map_),
-                                  static_cast<double>(max_angle_map_),
-                                  static_cast<double>(min_pwm_),
-                                  static_cast<double>(max_pwm_)));
+    uint16_t result = (uint16_t)(round(remapf(offseted_angle,
+                                  static_cast<float>(min_angle_map_),
+                                  static_cast<float>(max_angle_map_),
+                                  static_cast<float>(min_pwm_),
+                                  static_cast<float>(max_pwm_))));
     // add constraint
     // result = constrain()
 
     set_pwm(result);
 }
+/** 
+ * @brief Prints the current configuration of the servo, including channel, PWM range, current PWM, current angle, angle mapping, and offset.
+ * This function is useful for debugging and verifying that the servo is configured correctly.
+ */
 void Servo::print_config() const noexcept
 {
     printf("Servo config:\r\n");
@@ -111,3 +115,4 @@ void Servo::print_config() const noexcept
     printf("  Offset: %d\r\n", offset_angle_map_);
     printf("--------------------------\r\n");
 }
+
