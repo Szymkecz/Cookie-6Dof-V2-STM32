@@ -64,7 +64,8 @@ public:
     void print_config() const noexcept;
     char uart_config() const noexcept
     {
-        /* char buffer[100];
+        char buffer[100];
+        /*
         snprintf(buffer, sizeof(buffer), "CH:%lu, PWM:[%u-%u], CURR_PWM:%u, CURR_ANGLE:%.2f, ANGLE_MAP:[%d-%d], OFFSET:%d\r\n",
                  channel_, min_pwm_, max_pwm_, curr_pwm_, curr_angle_, min_angle_map_, max_angle_map_, offset_angle_map_);
         */
