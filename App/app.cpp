@@ -7,10 +7,12 @@
 
 //TEMP
 #include "tim.h"
+#include "gpio.h"
 
 extern DMA_HandleTypeDef hdma_usart2_rx;
 uint8_t rx_buffer[128];
 bool is_streaming = false;
+std::array<double, 7> angles = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
 
 extern "C" int _write(int file, char *ptr, int len) {
     // Wysyła ciąg znaków przez UART2
@@ -49,10 +51,11 @@ extern "C" void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t S
                 
                 // --- TUTAJ MOŻESZ PRZEKAZAĆ KĄTY DO SERWO MANAGERA ---
                 // Twój ServoManager ma std::array<double, 7>, więc możemy to przepisać:
-                /*
-                std::array<double, 7> new_angles = {j[0], j[1], j[2], j[3], j[4], j[5], 0.0};
                 
-                */
+                angles = {j[0], j[1], j[2], j[3], j[4], j[5], 0.0};
+                ServoManager::set_angles(angles); 
+                
+                
             } else {
                 // BŁĄD: Ramka była uszkodzona
                 printf("FB[%d,ERR_PARSE]\r\n", frame_id);
@@ -65,7 +68,7 @@ extern "C" void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t S
     }
 }
 
-
+ 
 int app() {
     
     // Włączenie zasilania serw (Przekaźnik)
@@ -80,10 +83,11 @@ int app() {
     HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1);
 
     // Inicjalizacja serw na pozycje startowe
-    std::array<double, 7> angles = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
-    std::array<uint16_t, 7> pwm_values = {1500, 1500, 1500, 1500, 1500, 1500, 1500};
-    ServoManager::set_pwm(pwm_values);
-     
+    
+    // std::array<uint16_t, 7> pwm_values = {1500, 1500, 1500, 1500, 1500, 1500, 1500};
+    // ServoManager::set_pwm(pwm_values);
+    ServoManager::set_angles(angles); 
+
     // NOWE: Uruchomienie nasłuchiwania UART przez DMA przed wejściem w pętlę!
     HAL_UARTEx_ReceiveToIdle_DMA(&huart2, rx_buffer, sizeof(rx_buffer));
     __HAL_DMA_DISABLE_IT(&hdma_usart2_rx, DMA_IT_HT);
@@ -96,6 +100,9 @@ int app() {
         /* if (htim3_has_passed){
             ServoManager::set_angles(new_angles); 
         }*/
-        // HAL_Delay(20);
+        if(HAL_GPIO_ReadPin(B1_GPIO_Port, B1_Pin) == GPIO_PIN_RESET) {
+            printf("Przycisk wcisniety!\r\n");
+            Error_Handler();
+        }
     }
 }

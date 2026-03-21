@@ -178,6 +178,11 @@ void Error_Handler(void)
   __disable_irq();
   while (1)
   {
+    HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin); 
+    // HAL_Delay(500);
+    for (volatile uint32_t i = 0; i < 10000000; i++) {
+          // Pusta pętla marnująca czas
+      }
   }
   /* USER CODE END Error_Handler_Debug */
 }
