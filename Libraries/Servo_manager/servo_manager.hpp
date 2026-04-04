@@ -5,6 +5,8 @@
 #include <cstdio>
 #include <array>
 #include <cinttypes>
+#include <string>
+#include "usart.h"
 
 namespace ServoManager {
 
@@ -17,6 +19,8 @@ namespace ServoManager {
 
     std::array<uint16_t, SERVO_COUNT> get_curr_pwm();
     std::array<double, SERVO_COUNT> get_curr_angles();
+
+    void print_servos_config();
 
     // debugging
     void print_curr_pwm();

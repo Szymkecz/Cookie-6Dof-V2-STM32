@@ -85,12 +85,38 @@ namespace ServoManager {
         return angles;
     }
 
+    void print_servos_config()
+    {
+        char buffer[256]; // 256 bajtów spokojnie wystarczy (6 serw * ~30 znaków + nagłówek)
+    
+    // 1. Zaczynamy ramkę
+    int pos = snprintf(buffer, sizeof(buffer), "CFG[");
+
+    // 2. Dodajemy dane 6 serw w pętli
+    for (int i = 0; i < SERVO_COUNT-1; i++) {
+        // Zastąp `servos[i]` swoim faktycznym sposobem pobierania danych serwa
+        pos += snprintf(buffer + pos, sizeof(buffer) - pos,
+                        "%d,%d,%d,%.1f%s",
+                        SrvArray[i].get_offset_angle(), 
+                        SrvArray[i].get_min_angle_map(), 
+                        SrvArray[i].get_max_angle_map(), 
+                        (double)SrvArray[i].get_curr_angle(),
+                        (i < SERVO_COUNT-2) ? "|" : ""); // Dodaj '|' po każdym serwie oprócz ostatniego
+    }
+
+    // 3. Zamykamy ramkę
+    snprintf(buffer + pos, sizeof(buffer) - pos, "];\n");
+
+    // 4. Wysyłamy!
+    printf("%s", buffer);
+    }
+
     void print_curr_pwm()
     {
         std::array<uint16_t, SERVO_COUNT> pwm;
         pwm = get_curr_pwm();
 
-        char buffor[128];
+        // char buffor[128];
 
         printf("current pwm: %u, %u, %u, %u, %u, %u, %u \r\n",
                pwm[0],

@@ -52,6 +52,10 @@ public:
     }
 
     // returns reach of servo in degrees
+    int16_t get_offset_angle() const noexcept
+    {
+        return offset_angle_map_;
+    }
     int16_t get_min_angle_map() const noexcept
     {
         return std::min(min_angle_map_, max_angle_map_) - offset_angle_map_;
