@@ -44,75 +44,75 @@ extern "C" void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t S
         {
             ServoManager::print_servos_config();
         }
-        // else if (strncmp((char *)rx_buffer, "MOVE_JOINTS[", 12) == 0)
-        // {
-
-        //     // 1. Znajdujemy nawias zamykający ']' i podmieniamy go na znak końca stringa '\0'
-        //     // Dzięki temu ucinamy "\n" i średnik, zostawiając same dane.
-        //     char *end_bracket = strchr((char *)rx_buffer, ']');
-        //     if (end_bracket != nullptr)
-        //     {
-        //         *end_bracket = '\0';
-
-        //         // 2. data_start wskazuje teraz na pierwszy znak po "MOVE_JOINTS["
-        //         // np. tekst: "2.5,+,0,-,0,0,0"
-        //         char *data_start = (char *)rx_buffer + 12;
-
-        //         // 3. Rozbijamy tekst po przecinkach używając strtok
-        //         char *token = strtok(data_start, ",");
-
-        //         if (token != nullptr)
-        //         {
-        //             // Pierwszy element to nasza prędkość (float)
-        //             float move_speed = atof(token);
-
-        //             // Tablica na 6 kierunków ('+', '-', '0')
-        //             char directions[6] = {'0', '0', '0', '0', '0', '0'};
-
-        //             // Pobieramy kolejne 6 elementów
-        //             for (int i = 0; i < 6; i++)
-        //             {
-        //                 token = strtok(nullptr, ",");
-        //                 if (token != nullptr)
-        //                 {
-        //                     // Zapisujemy tylko pierwszy znak z tokena
-        //                     directions[i] = token[0];
-        //                 }
-        //             }
-
-        //             // 4. Mamy wszystko! Przekazujemy rozpakowane dane do Menedżera Serw
-        //             // ServoManager::handle_manual_move(move_speed, directions);
-        //         }
-        //     }
-        // }
-
-        // 2. Parsowanie ramek z pozycjami (format: JN[ID, J1, J2, J3, J4, J5, J6];)
-        else if (is_streaming && rx_buffer[0] == 'J' && rx_buffer[1] == 'N')
+        else if (strncmp((char *)rx_buffer, "MOVE_JOINTS[", 12) == 0)
         {
-            int frame_id = 0;
-            float j[6] = {0.0f};
 
-            // %d to ID ramki, %f to kolejne kąty
-            int parsed = sscanf((char *)rx_buffer, "JN[%d,%f,%f,%f,%f,%f,%f]",
-                                &frame_id, &j[0], &j[1], &j[2], &j[3], &j[4], &j[5]);
-
-            if (parsed == 7)
+            // 1. Znajdujemy nawias zamykający ']' i podmieniamy go na znak końca stringa '\0'
+            // Dzięki temu ucinamy "\n" i średnik, zostawiając same dane.
+            char *end_bracket = strchr((char *)rx_buffer, ']');
+            if (end_bracket != nullptr)
             {
-                // SUKCES: Odsyłamy Pythonowi potwierdzenie dla tej konkretnej ramki
-                printf("FB[%d,OK]\r\n", frame_id);
+                *end_bracket = '\0';
 
-                // --- TUTAJ MOŻESZ PRZEKAZAĆ KĄTY DO SERWO MANAGERA ---
-                // Twój ServoManager ma std::array<double, 7>, więc możemy to przepisać:
+                // 2. data_start wskazuje teraz na pierwszy znak po "MOVE_JOINTS["
+                // np. tekst: "2.5,+,0,-,0,0,0"
+                char *data_start = (char *)rx_buffer + 12;
 
-                angles = {j[0], j[1], j[2], j[3], j[4], j[5], 0.0};
-                ServoManager::set_angles(angles);
-            }
-            else
-            {
-                // BŁĄD: Ramka była uszkodzona
-                printf("FB[%d,ERR_PARSE]\r\n", frame_id);
+                // 3. Rozbijamy tekst po przecinkach używając strtok
+                char *token = strtok(data_start, ",");
+
+                if (token != nullptr)
+                {
+                    // Pierwszy element to nasza prędkość (float)
+                    float move_speed = atof(token);
+
+                    // Tablica na 6 kierunków ('+', '-', '0')
+                    std::array<char, 6> directions = {'0', '0', '0', '0', '0', '0'};
+
+                    // Pobieramy kolejne 6 elementów
+                    for (int i = 0; i < 6; i++)
+                    {
+                        token = strtok(nullptr, ",");
+                        if (token != nullptr)
+                        {
+                            // Zapisujemy tylko pierwszy znak z tokena
+                            directions[i] = token[0];
+                        }
+                    }
+
+                    // 4. Mamy wszystko! Przekazujemy rozpakowane dane do Menedżera Serw
+                    ServoManager::handle_manual_move(move_speed, directions);
+                }
             }
         }
+
+        // 2. Parsowanie ramek z pozycjami (format: JN[ID, J1, J2, J3, J4, J5, J6];)
+        // else if (is_streaming && rx_buffer[0] == 'J' && rx_buffer[1] == 'N')
+        // {
+        //     int frame_id = 0;
+        //     float j[6] = {0.0f};
+
+        //     // %d to ID ramki, %f to kolejne kąty
+        //     int parsed = sscanf((char *)rx_buffer, "JN[%d,%f,%f,%f,%f,%f,%f]",
+        //                         &frame_id, &j[0], &j[1], &j[2], &j[3], &j[4], &j[5]);
+
+        //     if (parsed == 7)
+        //     {
+        //         // SUKCES: Odsyłamy Pythonowi potwierdzenie dla tej konkretnej ramki
+        //         printf("FB[%d,OK]\r\n", frame_id);
+
+        //         // --- TUTAJ MOŻESZ PRZEKAZAĆ KĄTY DO SERWO MANAGERA ---
+        //         // Twój ServoManager ma std::array<double, 7>, więc możemy to przepisać:
+
+        //         angles = {j[0], j[1], j[2], j[3], j[4], j[5], 0.0};
+        //         ServoManager::set_angles(angles);
+        //     }
+        //     else
+        //     {
+        //         // BŁĄD: Ramka była uszkodzona
+        //         printf("FB[%d,ERR_PARSE]\r\n", frame_id);
+        //     }
+        // }
 
         // 3. Krytyczne: Ponowne uzbrojenie DMA na kolejną paczkę danych
         HAL_UARTEx_ReceiveToIdle_DMA(&huart2, rx_buffer, sizeof(rx_buffer));
@@ -130,9 +130,6 @@ int app()
     printf("Test floatow: %.2f\r\n", 3.14);
 
     ServoManager::init();
-
-    // 1. Uruchomienie generowania sygnału PWM na kanale 1 Timera 1
-    HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1);
 
     // Inicjalizacja serw na pozycje startowe
 

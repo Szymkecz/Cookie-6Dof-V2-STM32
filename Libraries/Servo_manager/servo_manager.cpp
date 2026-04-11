@@ -2,7 +2,8 @@
 #include "servo_manager.hpp"
 #include "tim.h"
 
-namespace ServoManager {
+namespace ServoManager
+{
     // WAIST------------------
     constexpr uint16_t J1_MIN_PWM = 550;
     constexpr uint16_t J1_MAX_PWM = 2600;
@@ -51,16 +52,18 @@ namespace ServoManager {
         SrvArray[6].set_angle_offset(90);
     }
 
-    void set_pwm(std::array<uint16_t, SERVO_COUNT>& pwm_values)
+    void set_pwm(std::array<uint16_t, SERVO_COUNT> &pwm_values)
     {
-        for (uint8_t i = 0; i < SERVO_COUNT; i++) {
+        for (uint8_t i = 0; i < SERVO_COUNT; i++)
+        {
             SrvArray[i].set_pwm(pwm_values[i]);
         }
     }
 
-    void set_angles(std::array<double, SERVO_COUNT>& angles)
+    void set_angles(std::array<double, SERVO_COUNT> &angles)
     {
-        for (uint8_t i = 0; i < SERVO_COUNT; i++) {
+        for (uint8_t i = 0; i < SERVO_COUNT; i++)
+        {
             SrvArray[i].set_angle(angles[i]);
         }
     }
@@ -69,7 +72,8 @@ namespace ServoManager {
     {
         std::array<uint16_t, SERVO_COUNT> pwm;
 
-        for (uint8_t i = 0; i < SERVO_COUNT; i++) {
+        for (uint8_t i = 0; i < SERVO_COUNT; i++)
+        {
             pwm[i] = SrvArray[i].get_curr_pwm();
         }
         return pwm;
@@ -79,7 +83,8 @@ namespace ServoManager {
     {
         std::array<double, SERVO_COUNT> angles;
 
-        for (uint8_t i = 0; i < SERVO_COUNT; i++) {
+        for (uint8_t i = 0; i < SERVO_COUNT; i++)
+        {
             angles[i] = SrvArray[i].get_curr_angle();
         }
         return angles;
@@ -88,27 +93,58 @@ namespace ServoManager {
     void print_servos_config()
     {
         char buffer[256]; // 256 bajtów spokojnie wystarczy (6 serw * ~30 znaków + nagłówek)
-    
-    // 1. Zaczynamy ramkę
-    int pos = snprintf(buffer, sizeof(buffer), "CFG[");
 
-    // 2. Dodajemy dane 6 serw w pętli
-    for (int i = 0; i < SERVO_COUNT-1; i++) {
-        // Zastąp `servos[i]` swoim faktycznym sposobem pobierania danych serwa
-        pos += snprintf(buffer + pos, sizeof(buffer) - pos,
-                        "%d,%d,%d,%.1f%s",
-                        SrvArray[i].get_offset_angle(), 
-                        SrvArray[i].get_min_angle_map(), 
-                        SrvArray[i].get_max_angle_map(), 
-                        (double)SrvArray[i].get_curr_angle(),
-                        (i < SERVO_COUNT-2) ? "|" : ""); // Dodaj '|' po każdym serwie oprócz ostatniego
+        // 1. Zaczynamy ramkę
+        int pos = snprintf(buffer, sizeof(buffer), "CFG[");
+
+        // 2. Dodajemy dane 6 serw w pętli
+        for (int i = 0; i < SERVO_COUNT - 1; i++)
+        {
+            // Zastąp `servos[i]` swoim faktycznym sposobem pobierania danych serwa
+            pos += snprintf(buffer + pos, sizeof(buffer) - pos,
+                            "%d,%d,%d,%.1f%s",
+                            SrvArray[i].get_offset_angle(),
+                            SrvArray[i].get_min_angle_map(),
+                            SrvArray[i].get_max_angle_map(),
+                            (double)SrvArray[i].get_curr_angle(),
+                            (i < SERVO_COUNT - 2) ? "|" : ""); // Dodaj '|' po każdym serwie oprócz ostatniego
+        }
+
+        // 3. Zamykamy ramkę
+        snprintf(buffer + pos, sizeof(buffer) - pos, "];\n");
+
+        // 4. Wysyłamy!
+        printf("%s", buffer);
     }
 
-    // 3. Zamykamy ramkę
-    snprintf(buffer + pos, sizeof(buffer) - pos, "];\n");
+    void handle_manual_move(float speed, std::array<char, 6> &directions)
+    {
+        // 1. Zabezpieczenie na wypadek zerowej lub ujemnej prędkości
+        if (speed <= 0.0f)
+        {
+            return;
+        }
+        // 2. Przechodzimy przez dokładnie 6 przegubów robota
+        for (int i = 0; i < 6; i++)
+        {
 
-    // 4. Wysyłamy!
-    printf("%s", buffer);
+            // Pobieramy obecny kąt, w jakim znajduje się dane serwo.
+            // Zmień "get_curr_angle()" na funkcję, której używasz w swojej klasie!
+            float current_angle = SrvArray[i].get_curr_angle();
+
+            if (directions[i] == '+')
+            {
+                // Dodajemy prędkość (ruch w przód)
+                float new_angle = current_angle + speed;
+                SrvArray[i].set_angle(new_angle);
+            }
+            else if (directions[i] == '-')
+            {
+                // Odejmujemy prędkość (ruch w tył)
+                float new_angle = current_angle - speed;
+                SrvArray[i].set_angle(new_angle);
+            }
+        }
     }
 
     void print_curr_pwm()
@@ -149,10 +185,12 @@ namespace ServoManager {
     {
         static bool is_done = false;
 
-        if (is_done) {
+        if (is_done)
+        {
             return;
         }
-        for (uint8_t i = 0; i < SERVO_COUNT; i++) {
+        for (uint8_t i = 0; i < SERVO_COUNT; i++)
+        {
             printf("----| %u |-----\r\n", i);
             SrvArray[i].print_config();
         }
