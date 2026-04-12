@@ -24,6 +24,7 @@ namespace ServoManager
     // for web app
     void print_servos_config();
     void handle_manual_move(float speed, std::array<char, 6> &angles);
+    void print_current_angles();
 
     // debugging
     void print_curr_pwm();

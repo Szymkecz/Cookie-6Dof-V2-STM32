@@ -82,6 +82,8 @@ extern "C" void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t S
 
                     // 4. Mamy wszystko! Przekazujemy rozpakowane dane do Menedżera Serw
                     ServoManager::handle_manual_move(move_speed, directions);
+                    // TODO return via uart actual position, add in webApp update of new position
+                    ServoManager::print_current_angles();
                 }
             }
         }

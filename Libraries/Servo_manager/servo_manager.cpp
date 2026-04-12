@@ -147,12 +147,24 @@ namespace ServoManager
         }
     }
 
+    void print_current_angles()
+    {
+        std::array<double, SERVO_COUNT> angles;
+        angles = get_curr_angles();
+
+        printf("CURRENT_JOINTS[%.1f,%.1f,%.1f,%.1f,%.1f,%.1f]\r\n",
+               angles[0],
+               angles[1],
+               angles[2],
+               angles[3],
+               angles[4],
+               angles[5]);
+    }
+
     void print_curr_pwm()
     {
         std::array<uint16_t, SERVO_COUNT> pwm;
         pwm = get_curr_pwm();
-
-        // char buffor[128];
 
         printf("current pwm: %u, %u, %u, %u, %u, %u, %u \r\n",
                pwm[0],
@@ -168,8 +180,6 @@ namespace ServoManager
     {
         std::array<double, SERVO_COUNT> angles;
         angles = get_curr_angles();
-
-        char buffor[128];
 
         printf("JC[%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f];\r\n",
                angles[0],
