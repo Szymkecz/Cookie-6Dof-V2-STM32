@@ -44,7 +44,7 @@ namespace ServoManager
         SrvArray[2].set_new_map(180, 0);
         // added offsets for
         SrvArray[0].set_angle_offset(90);
-        SrvArray[1].set_angle_offset(87);
+        SrvArray[1].set_angle_offset(-3);
         SrvArray[2].set_angle_offset(79);
         SrvArray[3].set_angle_offset(100);
         SrvArray[4].set_angle_offset(90);

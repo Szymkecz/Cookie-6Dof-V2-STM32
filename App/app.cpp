@@ -12,7 +12,14 @@
 extern DMA_HandleTypeDef hdma_usart2_rx;
 uint8_t rx_buffer[128];
 bool is_streaming = false;
-std::array<double, 7> angles = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+std::array<double, 7> angles = {0.0, 90.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+
+constexpr char CMD_START_STREAM[] = "START_STREAM;";
+constexpr char CMD_STOP_STREAM[] = "STOP_STREAM;";
+constexpr char CMD_GET_CONFIG[] = "GET_CONFIG;";
+constexpr char CMD_MOVE_JOINTS[] = "MOVE_JOINTS[";
+constexpr char CMD_MOVE_TO[] = "MOVE_TO[";
+constexpr char CMD_HOME[] = "HOME;";
 
 extern "C" int _write(int file, char *ptr, int len)
 {
@@ -30,21 +37,21 @@ extern "C" void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t S
         rx_buffer[Size] = '\0';
 
         // 1. Sprawdzanie komend sterujących strumieniem
-        if (strncmp((char *)rx_buffer, "START_STREAM;", 13) == 0)
+        if (strncmp((char *)rx_buffer, CMD_START_STREAM, sizeof(CMD_START_STREAM) - 1) == 0)
         {
             is_streaming = true;
             printf("ACK_STREAM\r\n"); // Python na to czeka!
         }
-        else if (strncmp((char *)rx_buffer, "STOP_STREAM;", 12) == 0)
+        else if (strncmp((char *)rx_buffer, CMD_STOP_STREAM, sizeof(CMD_STOP_STREAM) - 1) == 0)
         {
             is_streaming = false;
             printf("Zatrzymano strumien.\r\n");
         }
-        else if (strncmp((char *)rx_buffer, "GET_CONFIG;", 11) == 0)
+        else if (strncmp((char *)rx_buffer, CMD_GET_CONFIG, sizeof(CMD_GET_CONFIG) - 1) == 0)
         {
             ServoManager::print_servos_config();
         }
-        else if (strncmp((char *)rx_buffer, "MOVE_JOINTS[", 12) == 0)
+        else if (strncmp((char *)rx_buffer, CMD_MOVE_JOINTS, sizeof(CMD_MOVE_JOINTS) - 1) == 0)
         {
 
             // 1. Znajdujemy nawias zamykający ']' i podmieniamy go na znak końca stringa '\0'
@@ -56,7 +63,7 @@ extern "C" void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t S
 
                 // 2. data_start wskazuje teraz na pierwszy znak po "MOVE_JOINTS["
                 // np. tekst: "2.5,+,0,-,0,0,0"
-                char *data_start = (char *)rx_buffer + 12;
+                char *data_start = (char *)rx_buffer + sizeof(CMD_MOVE_JOINTS) - 1;
 
                 // 3. Rozbijamy tekst po przecinkach używając strtok
                 char *token = strtok(data_start, ",");
@@ -86,6 +93,32 @@ extern "C" void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t S
                     ServoManager::print_current_angles();
                 }
             }
+        }
+        else if (strncmp((char *)rx_buffer, CMD_MOVE_TO, sizeof(CMD_MOVE_TO) - 1) == 0)
+        {
+            float j[6] = {0.0f};
+            char *data_start = (char *)rx_buffer + sizeof(CMD_MOVE_TO) - 1;
+
+            // Parsowanie 6 floatów oddzielonych przecinkami
+            int parsed = sscanf(data_start, "%f,%f,%f,%f,%f,%f",
+                                &j[0], &j[1], &j[2], &j[3], &j[4], &j[5]);
+
+            if (parsed == 6)
+            {
+                angles = {j[0], j[1], j[2], j[3], j[4], j[5], 0.0};
+                ServoManager::set_angles(angles);
+                ServoManager::print_current_angles();
+            }
+            else
+            {
+                printf("ERR_PARSE_MOVE_TO\r\n");
+            }
+        }
+        else if (strncmp((char *)rx_buffer, CMD_HOME, sizeof(CMD_HOME) - 1) == 0)
+        {
+            angles = {0.0, 90.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+            ServoManager::set_angles(angles);
+            ServoManager::print_current_angles();
         }
 
         // 2. Parsowanie ramek z pozycjami (format: JN[ID, J1, J2, J3, J4, J5, J6];)
