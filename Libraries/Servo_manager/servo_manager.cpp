@@ -49,7 +49,7 @@ namespace ServoManager
         SrvArray[3].set_angle_offset(100);
         SrvArray[4].set_angle_offset(90);
         SrvArray[5].set_angle_offset(90);
-        SrvArray[6].set_angle_offset(90);
+        SrvArray[6].set_angle_offset(45);
     }
 
     void set_pwm(std::array<uint16_t, SERVO_COUNT> &pwm_values)

@@ -20,6 +20,8 @@ constexpr char CMD_GET_CONFIG[] = "GET_CONFIG;";
 constexpr char CMD_MOVE_JOINTS[] = "MOVE_JOINTS[";
 constexpr char CMD_MOVE_TO[] = "MOVE_TO[";
 constexpr char CMD_HOME[] = "HOME;";
+constexpr char CMD_GRIPPER_OPEN[] = "GRIPPER_OPEN;";
+constexpr char CMD_GRIPPER_CLOSE[] = "GRIPPER_CLOSE;";
 
 extern "C" int _write(int file, char *ptr, int len)
 {
@@ -117,6 +119,20 @@ extern "C" void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t S
         else if (strncmp((char *)rx_buffer, CMD_HOME, sizeof(CMD_HOME) - 1) == 0)
         {
             angles = {0.0, 90.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+            ServoManager::set_angles(angles);
+            ServoManager::print_current_angles();
+        }
+        else if (strncmp((char *)rx_buffer, CMD_GRIPPER_OPEN, sizeof(CMD_GRIPPER_OPEN) - 1) == 0)
+        {
+            // Set the 7th joint (gripper) to an open angle
+            angles[6] = 45.0;
+            ServoManager::set_angles(angles);
+            ServoManager::print_current_angles();
+        }
+        else if (strncmp((char *)rx_buffer, CMD_GRIPPER_CLOSE, sizeof(CMD_GRIPPER_CLOSE) - 1) == 0)
+        {
+            // Set the 7th joint (gripper) to a closed angle
+            angles[6] = 0.0;
             ServoManager::set_angles(angles);
             ServoManager::print_current_angles();
         }
